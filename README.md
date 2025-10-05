@@ -10,10 +10,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
 
 * With conda
   
-    ```conda env export > environment.yml```
-* With pip
-
-    ```pip install -r requirements.txt```
+    ```conda env create -f environment.yml```
 
 ## 3 Usage
 
