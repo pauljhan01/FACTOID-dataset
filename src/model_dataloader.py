@@ -79,7 +79,8 @@ if __name__ == '__main__':
     source_graph_descriptor = pkl.load(
         gzip.open(os.path.join(args.source_frames_path, 'source_graph_descriptor.data'), 'rb'))
 
-    doc_embedding_file_path = [source_graph_descriptor['embedding_file_path']]
+    # doc_embedding_file_path = [source_graph_descriptor['embedding_file_path']]
+    doc_embedding_file_path = [args.sample_dir]
     embed_type = source_graph_descriptor['embed_type']
     doc_embedding_file_header = 'embedding_file'
     embed_mode = source_graph_descriptor['embed_mode']
@@ -120,6 +121,7 @@ if __name__ == '__main__':
     np.random.seed(ROOT_SEED)
     sampling_seeds = [int(random.uniform(0, 1000000)) for i in range(n_train_samples + n_test_samples + n_val_samples)]
 
+    print(doc_embedding_file_path)
     embedder = Embedder(doc_embedding_file_path, embed_type, dim)
 
     timeframed_dataset = []
@@ -128,7 +130,6 @@ if __name__ == '__main__':
             [join(source_frame_dir, f) for f in listdir(source_frame_dir) if isfile(join(source_frame_dir, f))]):
         if "source_graph_descriptor.data" in graph:
             continue
-        print(graph)
         timeframe_ds = RedditUserDataset.load_from_instance_file(graph)
         timeframe_ds.shorten_similarity_triplet_list(threshold)
         timeframed_dataset.append(timeframe_ds)

@@ -81,13 +81,13 @@ while curr_date + datetime.timedelta(days=delta_days) < end_date:
     timeframes.append((curr_date, curr_date + datetime.timedelta(days=delta_days)))
     curr_date = curr_date + datetime.timedelta(days=offset_days)
 
-print(timeframes)
+# print(timeframes)
 
 base_dataset = RedditUserDataset.load_from_file(args.base_dataset_path, compression='gzip')
 
 headers = base_dataset.data_frame.columns
 
-print(base_dataset.data_frame)
+# print(base_dataset.data_frame)
 
 if generate_source_graphs:
     print("Generating timeframed embeddings")
@@ -129,5 +129,5 @@ for graph in path_sort(
     if "source_graph_descriptor.data" in graph:
         continue
     print("Loading source timeframes")
-    print(graph)
+    # print(graph)
     timeframed_dataset.append(RedditUserDataset.load_from_instance_file(graph))

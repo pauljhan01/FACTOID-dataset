@@ -279,12 +279,12 @@ class RedditUserDataset(object):
             #             embedder.embed_user([doc[0] for doc in row['documents']], mode=embed_mode,
             #                                 timestamp_map=timestamp_dict)).float()
             user_id = row['user_id']
-            try:
-                feature_map[user_id]  = embedder.embed_user(user_id, time_index)
-            except Exception as e:
-                not_embedded_users.add(user_id)
-                print("Exception while embedding user " + str(index))
-                print(e)
+            # try:
+            feature_map[user_id]  = embedder.embed_user(user_id, time_index)
+            # except Exception as e:
+            #     not_embedded_users.add(user_id)
+            #     print("Exception while embedding user " + str(index))
+            #     print(e)
         
         return feature_map, not_embedded_users
     
@@ -483,12 +483,12 @@ def generate_similarity_matrix(embedder, pd_frame, threshold, embed_mode='avg', 
     for _, row in pd_frame.iterrows():
         user_id = row['user_id']
 
-        try:
-            embedding_dict[user_id] = embedder.embed_user(user_id, time_index).numpy()
+        # try:
+        embedding_dict[user_id] = embedder.embed_user(user_id, time_index).numpy()
 
-        except Exception as e:
-            print("Exception while embedding user " + str(row['user_id']))
-            print(e)
+        # except Exception as e:
+        #     print("Exception while embedding user " + str(row['user_id']))
+        #     print(e)
 
     visited = []
     triplets = []

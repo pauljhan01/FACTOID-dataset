@@ -40,6 +40,7 @@ if __name__ == '__main__':
 
     base_dataset = RedditUserDataset.load_from_file(args.base_dataset_path, compression='gzip')
     model = sentence_embeddings_model('all-mpnet-base-v2')
+    print(DEVICE)
     
     files = glob.glob(os.path.join(args.vocabs_dir, '*.txt'))
     files = sorted(files, key= lambda file: int(file.split('.')[-2].split('_')[-1]))

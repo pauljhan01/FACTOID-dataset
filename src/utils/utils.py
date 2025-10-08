@@ -1,4 +1,5 @@
 import argparse
+import os
 
 def monthToIdx(date):
     ''' Function to compute the index of the date in a given list using month granularity. Assumes that the range of months is from 2020-2021

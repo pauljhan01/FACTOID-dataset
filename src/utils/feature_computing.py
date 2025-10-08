@@ -116,6 +116,9 @@ class Embedder:
             else:
                 return torch.rand(self.dim)
         else:
+            print(self.users_embeddings)
+            print("idx: ", idx)
+            print("time_bucket", time_bucket)
             return self.users_embeddings[idx][time_bucket]
     
     def __del__(self):
