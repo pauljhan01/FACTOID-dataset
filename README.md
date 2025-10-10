@@ -60,10 +60,10 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   --n_users=200 \
   --n_train_samples=1000 \
   --n_val_samples=200 \
-  --base_dataset='../data/reddit_dataset/factoid_dataset.gzip' \
-  --source_frames='../data/reddit_dataset/linguistic/cosine/avg/bert_embeddings/source' \
-  --sample_dir='../data/reddit_dataset/model_samples_avg/bert_embeddings/' \
-  --user_ids='../data/reddit_dataset/user_splits/' \
+  --base_dataset='../data/factoid_dataset.gzip' \
+  --source_frames='../data/source' \
+  --sample_dir='../data/bert_embeddings/' \
+  --user_ids='../data/user_splits/' \
   --threshold=0.8 |& tee ../logs/model_dataloader.txt
   ```
 
@@ -74,7 +74,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   ```
   python training_graph.py --patience=40 \
   --run_id='bert_embeddings' \
-  --sample_dir='../data/reddit_dataset/model_samples_avg/bert_embeddings/'  \
+  --sample_dir='../data/bert_embeddings/'  \
   --result_dir='../results/' \
   --checkpoint_dir='../results/checkpoints/' \
   --max_epochs=50 \

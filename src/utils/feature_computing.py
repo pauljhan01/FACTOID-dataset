@@ -34,8 +34,6 @@ class Embedder:
                         
                         user_embedding.append(torch.tensor(embedding))
                         self.users_embeddings[user_id] = user_embedding
-
-                        print("User embeddings", self.users_embeddings)
             
         if 'usr2vec' in embeddings_type:
             files = glob.glob(os.path.join(embeddings_dir[0], '*.txt'))
@@ -118,9 +116,6 @@ class Embedder:
             else:
                 return torch.rand(self.dim)
         else:
-            print(self.users_embeddings)
-            print("idx: ", idx)
-            print("time_bucket", time_bucket)
             return self.users_embeddings[idx][time_bucket]
     
     def __del__(self):

@@ -44,9 +44,9 @@ def calc_confusion_matrices(model, train_samples, val_samples, test_samples):
             label = sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in sample.graph_data]
             time_steps = sample.window
-            adj = sample.adj
+            # adj = sample.adj
             
-            output = model(all_graphs, features, time_steps, adj)
+            output = model(all_graphs, features, time_steps)
             train_mats.append(conf_matrix(output, label))
 
         for sample in val_samples:
@@ -54,9 +54,9 @@ def calc_confusion_matrices(model, train_samples, val_samples, test_samples):
             label = sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in sample.graph_data]
             time_steps = sample.window
-            adj = sample.adj
+            # adj = sample.adj
             
-            output = model(all_graphs, features, time_steps, adj)
+            output = model(all_graphs, features, time_steps)
             val_mats.append(conf_matrix(output, label))
 
         for sample in test_samples:
@@ -64,8 +64,8 @@ def calc_confusion_matrices(model, train_samples, val_samples, test_samples):
             label = sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in sample.graph_data]
             time_steps = sample.window
-            adj = sample.adj
-            output = model(all_graphs, features, time_steps, adj)
+            # adj = sample.adj
+            output = model(all_graphs, features, time_steps)
             test_mats.append(conf_matrix(output, label))
 
     return [(sum(train_mats)), (sum(val_mats)), (sum(test_mats))]
@@ -83,9 +83,9 @@ def calc_prediction_map(model, train_samples, val_samples, test_samples):
             label = sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in sample.graph_data]
             time_steps = sample.window
-            adj = sample.adj
+            # adj = sample.adj
             
-            output = model(all_graphs, train_features, time_steps, adj)
+            output = model(all_graphs, train_features, time_steps)
             
             reversed_users = {v: k for k, v in sample.user_index.items()}
             preds = output.max(1)[1].type_as(sample.labels)
@@ -103,9 +103,9 @@ def calc_prediction_map(model, train_samples, val_samples, test_samples):
             label = sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in sample.graph_data]
             time_steps = sample.window
-            adj = sample.adj
+            # adj = sample.adj
             
-            output = model(all_graphs, val_features, time_steps, adj)
+            output = model(all_graphs, val_features, time_steps)
             
             reversed_users = {v: k for k, v in sample.user_index.items()}
             preds = output.max(1)[1].type_as(sample.labels)
@@ -123,9 +123,9 @@ def calc_prediction_map(model, train_samples, val_samples, test_samples):
             label = sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in sample.graph_data]
             time_steps = sample.window
-            adj = sample.adj
+            # adj = sample.adj
             
-            output = model(all_graphs, test_features, time_steps, adj)
+            output = model(all_graphs, test_features, time_steps)
 
             reversed_users = {v: k for k, v in sample.user_index.items()}
             preds = output.max(1)[1].type_as(sample.labels)

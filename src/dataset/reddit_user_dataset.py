@@ -280,6 +280,8 @@ class RedditUserDataset(object):
             #                                 timestamp_map=timestamp_dict)).float()
             user_id = row['user_id']
             # try:
+            if user_id not in embedder.users_embeddings.keys():
+                continue    
             feature_map[user_id]  = embedder.embed_user(user_id, time_index)
             # except Exception as e:
             #     not_embedded_users.add(user_id)
@@ -469,6 +471,8 @@ def generate_ground_truth(post_map, content_index=2):
 
 
 def cos_sim(vec1, vec2):
+    if np.linalg.norm(vec1) * np.linalg.norm(vec2) == 0.0:
+        return 0.0
     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
 
@@ -482,6 +486,9 @@ def generate_similarity_matrix(embedder, pd_frame, threshold, embed_mode='avg', 
 
     for _, row in pd_frame.iterrows():
         user_id = row['user_id']
+
+        if user_id not in embedder.users_embeddings.keys():
+            continue
 
         # try:
         embedding_dict[user_id] = embedder.embed_user(user_id, time_index).numpy()
@@ -508,6 +515,7 @@ def generate_similarity_matrix(embedder, pd_frame, threshold, embed_mode='avg', 
 
 def build_linguistic_graph_precomputed(pd_frame, triplet_list, threshold=0.75, percentage=0.05):
     dists = {}
+    print(pd_frame)
     ids = set(pd_frame['user_id'].values)
     for triplet in triplet_list:
         if triplet[0] not in ids or triplet[1] not in ids:

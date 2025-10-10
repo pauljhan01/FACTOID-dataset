@@ -82,11 +82,12 @@ def train(epoch):
         train_label = train_sample.labels.to(DEVICE)
         all_graphs = [graph.to(DEVICE) for graph in train_sample.graph_data]
         time_steps = train_sample.window
-        adj = train_sample.adj
+        # adj = train_sample.adj
         end = time.time()
         compute = end - start
         start = time.time()
-        output = model(all_graphs, train_features, time_steps, adj)
+        # output = model(all_graphs, train_features, time_steps, adj)
+        output = model(all_graphs, train_features, time_steps)
         #loss_train = F.nll_loss(output, train_label)
         loss_train = loss_fn(output, train_label,  get_samples_per_class(train_label))
         acc_train.append(accuracy(output, train_label).detach().cpu().numpy())
@@ -107,9 +108,9 @@ def train(epoch):
             val_label = val_sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in val_sample.graph_data]
             time_steps = val_sample.window
-            adj = val_sample.adj
+            # adj = val_sample.adj
 
-            output = model(all_graphs, val_features, time_steps, adj)
+            output = model(all_graphs, val_features, time_steps)
             #loss_val = F.nll_loss(output, val_label)
             loss_val = loss_fn(output, val_label,  get_samples_per_class(val_label))
             accuracy_val.append(accuracy(output, val_label).detach().cpu().numpy())
@@ -126,9 +127,9 @@ def train(epoch):
             test_label = test_sample.labels.to(DEVICE)
             all_graphs = [graph.to(DEVICE) for graph in test_sample.graph_data]
             time_steps = test_sample.window
-            adj = test_sample.adj
+            # adj = test_sample.adj
 
-            output = model(all_graphs, test_features, time_steps, adj)
+            output = model(all_graphs, test_features, time_steps)
             #loss_test = F.nll_loss(output, test_label)
             loss_test = loss_fn(output, test_label,  get_samples_per_class(test_label))
             accuracy_test.append(accuracy(output, test_label).detach().cpu().numpy())
@@ -268,7 +269,7 @@ for i in range(max_epochs):
         break
 
 bestModel_path = os.path.join(checkpoint_dir, best_filename)
-checkpoint = torch.load(bestModel_path, map_location=DEVICE)
+checkpoint = torch.load(bestModel_path, map_location=DEVICE, weights_only=False)
 print("Checkpoint was in epoch {}".format(checkpoint['epoch']))
 best_model = model
 best_model.load_state_dict(checkpoint['state_dict'])
@@ -289,9 +290,9 @@ with torch.no_grad():
         test_label = test_sample.labels.to(DEVICE)
         all_graphs = [graph.to(DEVICE) for graph in test_sample.graph_data]
         time_steps = test_sample.window
-        adj = test_sample.adj
+        # adj = test_sample.adj
 
-        output = best_model(all_graphs, test_features, time_steps, adj)
+        output = best_model(all_graphs, test_features, time_steps)
         loss_test = F.nll_loss(output, test_label)
         accuracy_test.append(accuracy(output, test_label).detach().cpu().numpy())
         losses_test.append(np.mean(loss_test.detach().cpu().numpy()))

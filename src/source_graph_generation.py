@@ -77,10 +77,11 @@ embedder = Embedder(embeddings_filepath, embed_type, dim=dim)
 # Generate timeframes
 curr_date = start_date
 timeframes = []
-while curr_date + datetime.timedelta(days=delta_days) < end_date:
-    print(curr_date)
-    timeframes.append((curr_date, curr_date + datetime.timedelta(days=delta_days)))
-    curr_date = curr_date + datetime.timedelta(days=offset_days)
+# while curr_date + datetime.timedelta(days=delta_days) < end_date:
+#     print(curr_date)
+#     timeframes.append((curr_date, curr_date + datetime.timedelta(days=delta_days)))
+#     curr_date = curr_date + datetime.timedelta(days=offset_days)
+timeframes.append(curr_date)
 
 # print(timeframes)
 
@@ -89,6 +90,7 @@ base_dataset = RedditUserDataset.load_from_file(args.base_dataset_path, compress
 headers = base_dataset.data_frame.columns
 
 # print(base_dataset.data_frame)
+
 
 if generate_source_graphs:
     print("Generating timeframed embeddings")

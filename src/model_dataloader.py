@@ -43,6 +43,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     base_dataset = RedditUserDataset.load_from_file(args.base_dataset_path, compression='gzip')
 
+    print(base_dataset.data_frame)
+
 
     # Build ground truth
     ground_truth = {}
@@ -85,7 +87,6 @@ if __name__ == '__main__':
     doc_embedding_file_header = 'embedding_file'
     embed_mode = source_graph_descriptor['embed_mode']
 
-
     if 'dim' in source_graph_descriptor:
         dim = source_graph_descriptor['dim']
     else:
@@ -121,8 +122,27 @@ if __name__ == '__main__':
     np.random.seed(ROOT_SEED)
     sampling_seeds = [int(random.uniform(0, 1000000)) for i in range(n_train_samples + n_test_samples + n_val_samples)]
 
-    print(doc_embedding_file_path)
     embedder = Embedder(doc_embedding_file_path, embed_type, dim)
+
+    # Split user
+    train_ids = read_userids('train_ids.txt', args.user_ids)
+    val_ids = read_userids('val_ids.txt', args.user_ids)
+    test_ids = read_userids('test_ids.txt', args.user_ids)
+    print(len(train_ids))
+    print(len(val_ids))
+    print(len(test_ids))
+
+    for id in train_ids:
+        if id not in embedder.users_embeddings.keys():
+            train_ids.remove(id)
+
+    for id in val_ids:
+        if id not in embedder.users_embeddings.keys():
+            val_ids.remove(id)
+
+    for id in test_ids:
+        if id not in embedder.users_embeddings.keys():
+            test_ids.remove(id)  
 
     timeframed_dataset = []
 
@@ -137,15 +157,6 @@ if __name__ == '__main__':
         users = 0
         for index, row in RedditUserDataset.load_from_instance_file(graph).data_frame.iterrows():
             users += 1
-        
-        
-    # Split user
-    train_ids = read_userids('train_ids.txt', args.user_ids)
-    val_ids = read_userids('val_ids.txt', args.user_ids)
-    test_ids = read_userids('test_ids.txt', args.user_ids)
-    print(len(train_ids))
-    print(len(val_ids))
-    print(len(test_ids))
 
     # Validating the splits
     for uid in train_ids:
@@ -157,6 +168,13 @@ if __name__ == '__main__':
     for uid in val_ids:
         if uid in test_ids:
             raise Exception("Invalid split!")
+        
+    print("shape", base_dataset.data_frame.shape[0])
+    for _, row in base_dataset.data_frame.iterrows():
+        if row['user_id'] not in embedder.users_embeddings.keys():
+            rows = base_dataset.data_frame[base_dataset.data_frame['user_id'] == row['user_id']].index
+            base_dataset.data_frame.drop(rows, inplace=True)
+    print("shape", base_dataset.data_frame.shape[0])
 
     train_sample_frame = base_dataset.filter_user_ids(train_ids, inplace=False).data_frame
     print(len(train_sample_frame))
@@ -184,6 +202,8 @@ if __name__ == '__main__':
         for frame in timeframed_dataset:
             print('Precomputing random features...')
             for _, row in frame.data_frame.iterrows():
+                if row['user_id'] not in embedder.users_embeddings.keys():
+                    continue
                 precomputed_features[row['user_id']].append(torch.tensor(np.random.uniform(low=-1.5, high=1.5, size=dim)))
 
     print("Could not embed {} users".format(len(not_embedded_users)))
@@ -246,18 +266,19 @@ if __name__ == '__main__':
     print("Elapsed time:" + str(end - start))
 
     start = time.time()
-    sample_ids = list(set(test_sample_frame['user_id'].values).intersection(set(embedder.test_users)))
+    # sample_ids = list(set(test_sample_frame['user_id'].values).intersection(set(embedder.test_users)))
+    sample_ids = list(test_sample_frame['user_id'].values)
 
     print(f'Amount of test users {len(sample_ids)}')
-    for n in range(n_test_samples):
+    for n in range(len(sample_ids)):
         seed_counter += 1
         sample_frames = [frame.filter_user_ids(sample_ids, inplace=False) for frame in timeframed_dataset]
 
         start_frame = test_min_index
         test_window = test_max_index - test_min_index
 
-        print(start_frame)
-        print(start_frame + test_window)
+        # print(start_frame)
+        # print(start_frame + test_window)
         sample_frames = sample_frames[start_frame:]
         sample_frames = [
             tf.build_graph_column_precomputed(threshold=threshold, percentage=percentage, inplace=False).data_frame for
@@ -267,7 +288,7 @@ if __name__ == '__main__':
             
         sample = convert_timeframes_to_model_input(sample_frames, {k: v[start_frame:] for k, v in
                                                                 precomputed_features.items()}, ground_truth, dim)
-        sample.print_shapes()
+        # sample.print_shapes()
         pkl.dump(sample, gzip.open(os.path.join(target_dir, 'test_samples/') + 'sample_' + str(n) + '.data', 'wb'))
 
     end = time.time()
