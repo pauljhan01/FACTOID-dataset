@@ -18,7 +18,7 @@ def sentence_embeddings_model(bert_model):
 parser = ArgumentParser()
 parser.add_argument("--vocabs_dir", required=True, type=str)
 parser.add_argument("--base_dataset", dest="base_dataset_path", default='../data/reddit_dataset/reddit_corpus_balanced_filtered.gzip', type=str)
-parser.add_argument("--output_dir", default="../data/reddit_dataset/bert_embeddings/", type=str)
+parser.add_argument("--output_dir", required=True, default="../data/reddit_dataset/bert_embeddings/", type=str)
 
 
 """ 

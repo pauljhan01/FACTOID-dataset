@@ -37,7 +37,7 @@ parser.add_argument("--user_interaction_file_dir", dest='user_interaction_file_d
 parser.add_argument("--similarity_metric", dest="similarity_metric", default="cosine_similarity")
 parser.add_argument("--delta_days", dest="delta_days", default=30, type=int)
 parser.add_argument("--offset_days", dest="offset_days", default=30, type=int)
-parser.add_argument("--path", dest="path", required=True)
+parser.add_argument("--source_graph_path", dest="source_graph_path", required=True)
 parser.add_argument("--base_dataset", dest="base_dataset_path", required=True)
 parser.add_argument("--merge_liwc", dest="merge_liwc", default=False, type=str2bool)
 parser.add_argument("--doc_embedding_file_path", dest="doc_embedding_file_path", required=True, default=None)
@@ -49,8 +49,9 @@ generate_source_graphs = args.gen_source_graphs
 source_threshold = args.source_threshold
 embed_mode = args.embed_mode
 embed_type = args.embed_type
-path = args.path
-source_graph_path = os.path.join(path, 'source/')
+# path = args.path
+# source_graph_path = os.path.join(path, 'source/')
+source_graph_path = args.source_graph_path
 delta_days = args.delta_days
 offset_days = args.offset_days
 start_date = datetime.date(2020, 1, 1)
@@ -66,11 +67,11 @@ if merge_liwc:
 
 embedder = Embedder(embeddings_filepath, embed_type, dim=dim)
     
-if not os.path.exists(path):
-    os.makedirs(path)
+# if not os.path.exists(path):
+#     os.makedirs(path)
 
-if not os.path.exists(source_graph_path):
-    os.makedirs(source_graph_path)
+# if not os.path.exists(source_graph_path):
+#     os.makedirs(source_graph_path)
 
 
 # Generate timeframes

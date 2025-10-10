@@ -31,7 +31,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
    * UBERT embeddings
 
   ```
-   python user_embeddings_per_month.py --vocabs_dir='../data/user_vocabs_per_month' --base_dataset='../data/reddit_dataset/factoid_dataset.gzip'
+   python user_embeddings_per_month.py --vocabs_dir='../data/user_vocabs_per_month' --base_dataset='../data/reddit_dataset/factoid_dataset.gzip' --output_dir=../data/bert_embeddings
   ```
 
   * [User2Vec](https://github.com/samiroid/usr2vec)
@@ -44,9 +44,9 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   ```
   python source_graph_generation.py \
   --gen_source_graphs=True \
-  --path='../data/reddit_dataset/linguistic/cosine/avg/bert_embeddings/' \ 
+  --source_graph_path='../data/source/' \ 
   --base_dataset='../data/reddit_dataset/factoid_dataset.gzip' \
-  --doc_embedding_file_path='../data/embeddings/bert/' \
+  --doc_embedding_file_path='../data/bert_embeddings/' \
   --embed_type='bert' \
   --merge_liwc='false' \
   --dim=768 \

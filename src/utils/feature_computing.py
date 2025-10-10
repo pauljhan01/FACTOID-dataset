@@ -34,6 +34,8 @@ class Embedder:
                         
                         user_embedding.append(torch.tensor(embedding))
                         self.users_embeddings[user_id] = user_embedding
+
+                        print("User embeddings", self.users_embeddings)
             
         if 'usr2vec' in embeddings_type:
             files = glob.glob(os.path.join(embeddings_dir[0], '*.txt'))
