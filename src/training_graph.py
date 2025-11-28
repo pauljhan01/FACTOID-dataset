@@ -20,7 +20,7 @@ from utils.metrics import *
 from utils.utils import *
 from utils.loss_fct import *
 from utils.train_utils import save_checkpoint
-from model import GatClassification
+from model import GatClassification, GatV2Classification, GraphSAGEClassification
 from constants import *
 import sys
 
@@ -34,28 +34,6 @@ def loss_fn(output, targets, samples_per_cls, no_of_classes=2):
 
 def get_samples_per_class(labels):
     return torch.bincount(labels).tolist()
-
-def merge_samples(samples):
-    for sample in tqdm(samples):
-        temp = torch.mean(sample.features, dim=0, keepdim=True)
-
-        temp_tuples = set()
-        source = []
-        target = []
-
-        for graph_data in sample.graph_data:
-            for i in range(len(graph_data[0])):
-                connection = (graph_data[0][i], graph_data[1][i])
-
-                if connection not in temp_tuples:
-                    source.append(connection[0])
-                    target.append(connection[1])
-                    temp_tuples.add(connection)
-
-        edges = torch.cat([torch.tensor(source).unsqueeze(-1), torch.tensor(target).unsqueeze(-1)], dim=1).permute(1, 0)
-        sample.window = 1
-        sample.graph_data = [edges]
-        sample.features = temp
 
 def train(epoch):
     #@TODO: Split both loops into train and evaluation into the model.
@@ -87,7 +65,8 @@ def train(epoch):
         compute = end - start
         start = time.time()
         # output = model(all_graphs, train_features, time_steps, adj)
-        output = model(all_graphs, train_features, time_steps)
+        # output = model(all_graphs, train_features, time_steps)
+        output = model(all_graphs, train_features)
         #loss_train = F.nll_loss(output, train_label)
         loss_train = loss_fn(output, train_label,  get_samples_per_class(train_label))
         acc_train.append(accuracy(output, train_label).detach().cpu().numpy())
@@ -195,8 +174,7 @@ nheads = args.nheads
 print("Weight decay: {}".format(weight_decay))
 print("Learning rate: {}".format(l_r))
 
-model = GatClassification(nfeat=users_dim, nhid_graph=args.nhid_graph, nhid=args.nhid, nclass=2, dropout=dropout,
-                nheads=nheads, gnn_name=args.gnn).to(DEVICE)
+model = GraphSAGEClassification(users_dim, args.nhid_graph, 2, dropout=dropout).to(DEVICE)
 
 
 optimizer = optim.Adam(model.parameters(),
@@ -296,9 +274,8 @@ with torch.no_grad():
         loss_test = F.nll_loss(output, test_label)
         accuracy_test.append(accuracy(output, test_label).detach().cpu().numpy())
         losses_test.append(np.mean(loss_test.detach().cpu().numpy()))
-        gold =output.max(1)[1].type_as(test_label).detach().cpu().numpy()
+        gold = output.max(1)[1].type_as(test_label).detach().cpu().numpy()
         test_metrics = print_metrics(gold, test_label.cpu().numpy())
-        
 
 test_accuracy = np.mean(np.array(accuracy_test))
 test_loss = float(np.mean(np.array(losses_test)))

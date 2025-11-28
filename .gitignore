@@ -2,3 +2,4 @@ logs/**
 **/__pycache__/**
 data/
 factoid_env/
+results/
