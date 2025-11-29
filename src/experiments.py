@@ -37,7 +37,8 @@ parser.add_argument("--result_dir", dest="result_dir", default="data/results", t
 parser.add_argument("--nheads", dest="nheads", default=8, type=int)
 parser.add_argument("--dropout", dest="dropout", default=0.2, type=float)
 parser.add_argument("--model_seed" , dest="model_seed", type=int, default=1234)
-parser.add_argument("--load_best_model", dest="load_best_model", type=bool, default=True)
+parser.add_argument("--load_best_model", dest="load_best_model", type=bool, default=False)
+parser.add_argument("--lazy_loading", dest="lazy_loading", type=bool, default=False)
 
 args = parser.parse_args()
 max_epochs = args.max_epochs
@@ -62,10 +63,12 @@ def get_samples_per_class(labels):
     return torch.bincount(labels).tolist()
 
 def generate_set_of_data(path, n):
-    set = []
+    data = []
     for i in range(n):
-        set.append(join(path, 'sample_' + str(i) + '.data'))
-    return set
+        sample_path = join(path, 'sample_' + str(i) + '.data')
+        data.append(pkl.load(gzip.open(sample_path, 'rb')))
+        # data.append(join(path, 'sample_' + str(i) + '.data'))
+    return data
 
 def get_data():
     descriptor = json.load(open(os.path.join(args.sample_dir, 'dataset_descriptor.json'), 'r'))
@@ -91,8 +94,9 @@ def train_model(model, optimizer):
     losses_train = []
     losses_val = []
     losses_test = []
-
+    
     for sample in train_samples:  #
+        print(sample)
         train_sample = None
         if args.lazy_loading:
             train_sample = pkl.load(gzip.open(sample, 'rb'))
@@ -110,7 +114,7 @@ def train_model(model, optimizer):
         start = time.time()
         # output = model(all_graphs, train_features, time_steps, adj)
         # output = model(all_graphs, train_features, time_steps)
-        output = model(all_graphs, train_features)
+        output = model(all_graphs, train_features, time_steps)
         #loss_train = F.nll_loss(output, train_label)
         loss_train = loss_fn(output, train_label,  get_samples_per_class(train_label))
         acc_train.append(accuracy(output, train_label).detach().cpu().numpy())
@@ -174,6 +178,8 @@ def find_best_model(model):
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     accs = {}
     current_epoch = 0
+    top_val_acc = 0
+    no_improvement_epochs = 0
     for i in range(max_epochs):
         current_epoch = i
         metrics = train_model(model, optimizer=optimizer)
@@ -270,8 +276,8 @@ else:
     graphsage_f1_score = []
 
     for i in range(8):    
-        gat_models.append(GatV2Classification(in_channels=in_channel, hidden_channels=hidden_channel, out_channels=out_channel, num_layers=i))
-        graphsage_models.append(GraphSageClassification(in_channels=in_channel, hidden_channels=hidden_channel, out_channels=out_channel, num_layers=i))
+        gat_models.append(GatV2Classification(in_channels=in_channel, hidden_channels=hidden_channel, out_channels=out_channel, num_layers=i).to(DEVICE))
+        graphsage_models.append(GraphSageClassification(in_channels=in_channel, hidden_channels=hidden_channel, out_channels=out_channel, num_layers=i).to(DEVICE))
 
     for model in gat_models:
         find_best_model(model)
