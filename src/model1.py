@@ -45,6 +45,7 @@ class GatClassification(nn.Module):
      
         output = self.linear(output)
         return F.log_softmax(output, dim=1)
+
 class GatV2Classification(nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, num_heads=4, nclass=2, num_layers=2, dropout=0.5):
         super(GatV2Classification, self).__init__()
@@ -81,22 +82,6 @@ class GatV2Classification(nn.Module):
         self.layers.append(GATv2Conv(hidden_channels, out_channels, heads=num_heads, concat=False)
         )
 
-    def get_hidden(self, graph, fts, time_steps):
-        y_full = []
-
-        for i in range(time_steps):
-            x = fts[i]
-            G = graph[i]
-
-            y = F.leaky_relu(self.layers[0](x, G), 0.2)
-            for layer in self.layers[1:]:
-                y = F.leaky_relu(layer(y, G), 0.2)
-
-            y_full.append(y.unsqueeze(0))
-
-        y = torch.cat(y_full,dim=0)
-        return y[-1]   # shape: [num_users, hidden_dim]
-
     def forward(self, graph, fts, time_steps, adj=None):
         y_full = []
 
@@ -120,12 +105,11 @@ class GatV2Classification(nn.Module):
         return output
 
 class GraphSageClassification(nn.Module):
-    def __init__(self, in_channels, hidden_channels, out_channels,
-                 nclass=2, num_layers=2, dropout=0.5):
+    def __init__(self, in_channels, hidden_channels, out_channels, nclass=2, num_layers=2, dropout=0.5):
         super(GraphSageClassification, self).__init__()
         
         self.num_layers = num_layers
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = dropout
 
         self.in_channels = in_channels
         self.hidden_channels = hidden_channels
@@ -134,66 +118,32 @@ class GraphSageClassification(nn.Module):
         self.linear = nn.Linear(self.out_channels, nclass)
 
         self.layers = nn.ModuleList()
-        # First layer
         self.layers.append(SAGEConv(in_channels, hidden_channels, aggr='mean'))
 
-        # Middle layers (if any)
         for _ in range(self.num_layers - 2):
             self.layers.append(SAGEConv(hidden_channels, hidden_channels, aggr='mean'))
 
-        # Final GraphSAGE layer
         self.layers.append(SAGEConv(hidden_channels, out_channels, aggr='mean'))
 
-    def get_hidden(self, graph, fts, time_steps):
+    def forward(self, graph, fts, time_steps, adj=None):
         y_full = []
 
         for i in range(time_steps):
             x = fts[i]
             G = graph[i]
-
-            y = F.leaky_relu(self.layers[0](x, G), 0.2)
-            for layer in self.layers[1:]:
-                y = F.leaky_relu(layer(y, G), 0.2)
-
-            y_full.append(y.unsqueeze(0))
-
-        y = torch.cat(y_full,dim=0)
-        return y[-1]   # shape: [num_users, hidden_dim]
- 
-    def forward(self, graph, fts, time_steps, adj=None):
-        """
-        graph: list of edge_index tensors, length = time_steps
-        fts:   (time_steps, num_nodes, in_channels)
-        """
-        y_full = []
-
-        for i in range(time_steps):
-            x = fts[i]           # (num_nodes, in_channels)
-            G = graph[i]         # edge_index for this timestep
-
-            # First SAGE layer
             y = F.leaky_relu(self.layers[0](x, G), 0.2)
 
-            # Middle SAGE layers
-            for layer in self.layers[1:-1]:
+            for j, layer in enumerate(self.layers[1:-1]):
                 y = F.leaky_relu(layer(y, G), 0.2)
 
-            # Save hidden features for this timestep
-            y_full.append(y.unsqueeze(0))   # (1, num_nodes, hidden_channels)
+            y_full.append(y.reshape(1, x.shape[0], self.hidden_channels))
+        y = torch.cat(y_full)
 
-        # y_full: list length T of (1, N, hidden)
-        y = torch.cat(y_full, dim=0)        # (T, N, hidden_channels)
-
-        # Aggregate across time, e.g. mean over timesteps
-        y = y.mean(dim=0)                   # (N, hidden_channels)
-
-        # Final SAGE layer over aggregated representation
-        G_last = graph[-1]
-        y = F.leaky_relu(self.layers[-1](y, G_last), 0.2)  # (N, out_channels)
-
-        # Classifier
-        y = self.dropout(y)
-        y = self.linear(y)                  # (N, nclass)
-        output = F.log_softmax(y, dim=1)    # (N, nclass)
-
+        y = F.leaky_relu(self.layers[-1](y, G), 0.2)
+        y = self.linear(y)
+        output = F.log_softmax(y, dim=1).reshape((fts.shape[1], -1))
         return output
+
+
+            
+
