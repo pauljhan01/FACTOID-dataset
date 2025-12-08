@@ -85,6 +85,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   --nhid=128 \
   --users_dim=768 \
   --gnn='gat' |& tee ../logs/graph_model_main.txt
+```
 
 ### 3.5 Train on both GNNs from layer 1 to 7
   ```
@@ -96,3 +97,10 @@ python experiments.py --patience=40 \    --run_id='bert_embeddings' \
     --learning_rate=5e-5 \
     --nheads=4 \
     --dropout=0.2 |& tee ../logs/graph_model_main.txt
+```
+
+### 3.6 PCA analysis and degree distribution, and network visualization
+ ```
+python pca_fixed.py 
+python network_visualization_clear.py
+ ```
