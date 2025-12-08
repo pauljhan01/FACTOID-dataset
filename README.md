@@ -85,4 +85,14 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   --nhid=128 \
   --users_dim=768 \
   --gnn='gat' |& tee ../logs/graph_model_main.txt
+
+### 3.5 Train on both GNNs from layer 1 to 7
   ```
+python experiments.py --patience=40 \    --run_id='bert_embeddings' \
+    --sample_dir='../data/bert_embeddings/' \
+    --result_dir='../results/' \
+    --checkpoint_dir='../results/checkpoints/' \
+    --max_epochs=50 \
+    --learning_rate=5e-5 \
+    --nheads=4 \
+    --dropout=0.2 |& tee ../logs/graph_model_main.txt
