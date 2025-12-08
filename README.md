@@ -8,9 +8,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
 
 ### 2.1 Environment Setup
 
-* With conda
-  
-    ```conda env create -f environment.yml```
+With pip, ```pip install -r requirements.txt```
 
 ## 3 Usage
 
@@ -23,7 +21,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   First extract user vocabularies 
 
   ```
-  python create_vocabs_per_month.py --base_dataset=../data/reddit_dataset/factoid_dataset.gzip
+  python3 create_vocabs_per_month.py --base_dataset=../data/factoid_dataset.gzip
   ```
 
   Then run the codes to generate
@@ -31,7 +29,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
    * UBERT embeddings
 
   ```
-   python user_embeddings_per_month.py --vocabs_dir='../data/user_vocabs_per_month' --base_dataset='../data/reddit_dataset/factoid_dataset.gzip' --output_dir=../data/bert_embeddings
+   python3 user_embeddings_per_month.py --vocabs_dir='../data/user_vocabs_per_month' --base_dataset='../data/factoid_dataset.gzip' --output_dir=../data/bert_embeddings
   ```
 
   * [User2Vec](https://github.com/samiroid/usr2vec)
@@ -42,10 +40,10 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   To generate graph samples, example script. Change the parameters based on the embeddings you want to use. The argument `embed_type`  takes the following values `['bert', 'usr2vec', 'usr2vec_rand', 'usr2vec_liwc', 'liwc']`
 
   ```
-  python source_graph_generation.py \
+  python3 source_graph_generation.py \
   --gen_source_graphs=True \
   --source_graph_path='../data/source/' \ 
-  --base_dataset='../data/reddit_dataset/factoid_dataset.gzip' \
+  --base_dataset='../data/factoid_dataset.gzip' \
   --doc_embedding_file_path='../data/bert_embeddings/' \
   --embed_type='bert' \
   --merge_liwc='false' \
@@ -56,7 +54,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   Then after creating the graph samples, run the following to make the split
 
   ```
-  python model_dataloader.py \
+  python3 model_dataloader.py \
   --n_users=200 \
   --n_train_samples=1000 \
   --n_val_samples=200 \
@@ -72,7 +70,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
   After training, validation, test samples are created, run the model using the following
 
   ```
-  python training_graph.py --patience=40 \
+  python3 training_graph.py --patience=40 \
   --run_id='bert_embeddings' \
   --sample_dir='../data/bert_embeddings/'  \
   --result_dir='../results/' \
@@ -89,7 +87,7 @@ FACTOID: a user-level **FAC**tuality and p**O**litical b**I**as **D**ataset, tha
 
 ### 3.5 Train on both GNNs from layer 1 to 7
   ```
-python experiments.py --patience=40 \    --run_id='bert_embeddings' \
+python3 experiments.py --patience=40 \    --run_id='bert_embeddings' \
     --sample_dir='../data/bert_embeddings/' \
     --result_dir='../results/' \
     --checkpoint_dir='../results/checkpoints/' \
@@ -101,6 +99,6 @@ python experiments.py --patience=40 \    --run_id='bert_embeddings' \
 
 ### 3.6 PCA analysis and degree distribution, and network visualization
  ```
-python pca_fixed.py 
-python network_visualization_clear.py
+python3 pca_fix.py 
+python3 network_visualization_clear.py
  ```
